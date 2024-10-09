@@ -24,6 +24,7 @@ import { EmptyProduct } from "./EmptyProduct";
 import { ProductCard } from "./ProductCard";
 import { ProductRegistrationModal } from "./ProductRegistrationModal";
 import { useAuthStore } from "@/store/auth/authStore";
+import { useFilterStore } from "@/store/filter/filterStore";
 
 interface ProductListProps {
   pageSize?: number;
@@ -43,7 +44,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   const products = useAppSelector(selectProducts);
   const hasNextPage = useAppSelector(selectHasNextPage);
   const isLoading = useAppSelector(selectIsLoading);
-  const filter = useAppSelector(selectFilter);
+  const filter = useFilterStore();
   const isLogin = useAuthStore((state) => state.isLogin);
   const user = useAuthStore((state) => state.user);
   const totalCount = useAppSelector(selectTotalCount);
