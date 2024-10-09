@@ -18,8 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ALL_CATEGORY_ID, categories } from '@/constants';
 import { createNewProduct, initialProductState } from '@/helpers/product';
-import { useAppDispatch } from '@/store/hooks';
-import { addProduct } from '@/store/product/productsActions';
+import { useProductStore } from '@/store/product/productStore';
 import { useToastStore } from '@/store/toast/toastStore';
 import { uploadImage } from '@/utils/imageUpload';
 import { ChangeEvent, useState } from 'react';
@@ -33,9 +32,9 @@ interface ProductRegistrationModalProps {
 export const ProductRegistrationModal: React.FC<
   ProductRegistrationModalProps
 > = ({ isOpen, onClose, onProductAdded }) => {
-  const dispatch = useAppDispatch();
   const [product, setProduct] = useState<NewProductDTO>(initialProductState);
   const showToast = useToastStore((state) => state.showToast);
+  const { addProduct } = useProductStore();
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
@@ -63,7 +62,7 @@ export const ProductRegistrationModal: React.FC<
       }
 
       const newProduct = createNewProduct(product, imageUrl);
-      await dispatch(addProduct(newProduct));
+      await addProduct(newProduct);
       showToast('성공적으로 물품을 등록했습니다');
       onClose();
       onProductAdded();
