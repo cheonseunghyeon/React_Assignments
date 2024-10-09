@@ -20,6 +20,7 @@ import { ALL_CATEGORY_ID, categories } from '@/constants';
 import { createNewProduct, initialProductState } from '@/helpers/product';
 import { useAppDispatch } from '@/store/hooks';
 import { addProduct } from '@/store/product/productsActions';
+import { useToastStore } from '@/store/toast/toastStore';
 import { uploadImage } from '@/utils/imageUpload';
 import { ChangeEvent, useState } from 'react';
 
@@ -34,7 +35,7 @@ export const ProductRegistrationModal: React.FC<
 > = ({ isOpen, onClose, onProductAdded }) => {
   const dispatch = useAppDispatch();
   const [product, setProduct] = useState<NewProductDTO>(initialProductState);
-
+  const showToast = useToastStore((state) => state.showToast);
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
@@ -63,6 +64,7 @@ export const ProductRegistrationModal: React.FC<
 
       const newProduct = createNewProduct(product, imageUrl);
       await dispatch(addProduct(newProduct));
+      showToast('성공적으로 물품을 등록했습니다');
       onClose();
       onProductAdded();
     } catch (error) {

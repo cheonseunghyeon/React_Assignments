@@ -6,7 +6,6 @@ import { extractIndexLink, isFirebaseIndexError } from "@/helpers/error";
 import { useModal } from "@/hooks/useModal";
 import { FirebaseIndexErrorModal } from "@/pages/error/components/FirebaseIndexErrorModal";
 import { addCartItem } from "@/store/cart/cartSlice";
-import { selectFilter } from "@/store/filter/filterSelectors";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadProducts } from "@/store/product/productsActions";
 import {

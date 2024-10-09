@@ -1,18 +1,20 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import Cookies from "js-cookie";
-import { Lock, Mail } from "lucide-react";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import Cookies from 'js-cookie';
+import { Lock, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { pageRoutes } from "@/apiRoutes";
-import { EMAIL_PATTERN } from "@/constants";
-import { auth } from "@/firebase";
-import { Layout, authStatusType } from "@/pages/common/components/Layout";
-import { useAppDispatch } from "@/store/hooks";
-import { useAuthStore } from "@/store/auth/authStore";
+import { pageRoutes } from '@/apiRoutes';
+import { EMAIL_PATTERN } from '@/constants';
+import { auth } from '@/firebase';
+import { Layout, authStatusType } from '@/pages/common/components/Layout';
+import { useAppDispatch } from '@/store/hooks';
+import { useAuthStore } from '@/store/auth/authStore';
+import { useToastStore } from '@/store/toast/toastStore';
+import Toast from '@/components/ui/toast';
 
 interface FormErrors {
   email?: string;
@@ -22,10 +24,10 @@ interface FormErrors {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  const showToast = useToastStore((state) => state.showToast);
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
 
   const { setIsLogin, setUser } = useAuthStore();
@@ -37,12 +39,12 @@ export const LoginPage = () => {
   const validateForm = () => {
     let formErrors: FormErrors = {};
     if (!email) {
-      formErrors.email = "이메일을 입력하세요";
+      formErrors.email = '이메일을 입력하세요';
     } else if (!EMAIL_PATTERN.test(email)) {
-      formErrors.email = "이메일 양식이 올바르지 않습니다";
+      formErrors.email = '이메일 양식이 올바르지 않습니다';
     }
     if (!password) {
-      formErrors.password = "비밀번호를 입력하세요";
+      formErrors.password = '비밀번호를 입력하세요';
     }
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
@@ -62,25 +64,26 @@ export const LoginPage = () => {
         const user = userCredential.user;
         const token = await user.getIdToken();
 
-        Cookies.set("accessToken", token, { expires: 7 });
+        Cookies.set('accessToken', token, { expires: 7 });
 
         setIsLogin(true);
         if (user) {
           setUser({
             uid: user.uid,
-            email: user.email ?? "",
-            displayName: user.displayName ?? "",
+            email: user.email ?? '',
+            displayName: user.displayName ?? '',
           });
         }
-
+        showToast('성공적으로 로그인되었습니다!');
         navigate(pageRoutes.main);
       } catch (error) {
+        showToast('로그인에 실패했습니다. 다시 시도해주세요.');
         console.error(
-          "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.",
+          '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
           error
         );
         setErrors({
-          form: "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.",
+          form: '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
         });
       }
     }

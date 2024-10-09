@@ -10,10 +10,12 @@ import { Home } from '@/pages/home';
 import { LoginPage } from '@/pages/login';
 import { Purchase } from '@/pages/purchase';
 import { RegisterPage } from '@/pages/register';
+import Toast from './components/ui/toast';
 
 const CommonLayout = () => (
   <RootErrorBoundary>
     <RootSuspense>
+      <Toast />
       <Outlet />
     </RootSuspense>
   </RootErrorBoundary>
