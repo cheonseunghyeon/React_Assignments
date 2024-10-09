@@ -16,13 +16,9 @@ import { ShippingInformationForm } from "@/pages/purchase/components/ShippingInf
 import { selectCart } from "@/store/cart/cartSelectors";
 import { resetCart } from "@/store/cart/cartSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  purchaseFailure,
-  purchaseStart,
-  purchaseSuccess,
-} from "@/store/purchase/purchaseSlice";
-import { useAuthStore } from "@/store/auth/authStore";
 
+import { useAuthStore } from "@/store/auth/authStore";
+import { usePurchaseStore } from "@/store/purchase/purchaseStore";
 export interface FormData {
   name: string;
   address: string;
@@ -40,8 +36,9 @@ export const Purchase: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const cart = useAppSelector(selectCart);
-  const { isLoading } = useAppSelector((state) => state.purchase);
-
+  const isLoading = usePurchaseStore((state) => state.isLoading);
+  const { purchaseFailure, purchaseStart, purchaseSuccess } =
+    usePurchaseStore();
   const [formData, setFormData] = useState<FormData>({
     name: user?.displayName ?? "",
     address: "",
@@ -84,7 +81,7 @@ export const Purchase: React.FC = () => {
     e.preventDefault();
     if (!isFormValid || !user) return;
 
-    dispatch(purchaseStart());
+    purchaseStart();
     const purchaseData = {
       ...formData,
       totalAmount: 0,
@@ -94,7 +91,7 @@ export const Purchase: React.FC = () => {
 
     try {
       await makePurchase(purchaseData, user.uid, cart);
-      dispatch(purchaseSuccess());
+      purchaseSuccess();
       if (user) {
         dispatch(resetCart(user.uid));
       }
@@ -102,13 +99,13 @@ export const Purchase: React.FC = () => {
       navigate(pageRoutes.main);
     } catch (err) {
       if (err instanceof Error) {
-        dispatch(purchaseFailure(err.message));
+        purchaseFailure(err.message);
         console.error(
           "잠시 문제가 발생했습니다! 다시 시도해 주세요.",
           err.message
         );
       } else {
-        dispatch(purchaseFailure("알 수 없는 오류가 발생했습니다."));
+        purchaseFailure("알 수 없는 오류가 발생했습니다.");
         console.error("잠시 문제가 발생했습니다! 다시 시도해 주세요.");
       }
     }

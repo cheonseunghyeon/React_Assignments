@@ -22,7 +22,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   registerStatus: "idle",
   registerError: null,
-
+  setIsLogin: (isLogin) => set({ isLogin }),
+  setUser: (user) => set({ user }),
   registerUser: async ({ email, password, name }) => {
     set({ registerStatus: "loading" });
     try {
@@ -40,9 +41,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
     }
   },
-  setIsLogin: (isLogin) => set({ isLogin }),
-
-  setUser: (user) => set({ user }),
 
   logout: () => {
     set({ isLogin: false, user: null });
