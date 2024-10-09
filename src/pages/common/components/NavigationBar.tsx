@@ -1,25 +1,27 @@
-import Cookies from 'js-cookie';
-import { Suspense, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
+import { Suspense, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { pageRoutes } from '@/apiRoutes';
-import { ApiErrorBoundary } from '@/pages/common/components/ApiErrorBoundary';
-import { logout } from '@/store/auth/authSlice';
-import { initCart } from '@/store/cart/cartSlice';
+import { pageRoutes } from "@/apiRoutes";
+import { ApiErrorBoundary } from "@/pages/common/components/ApiErrorBoundary";
+import { initCart } from "@/store/cart/cartSlice";
 
-import { Skeleton } from '@/components/ui/skeleton';
-import { useModal } from '@/hooks/useModal';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { CartButton } from './CartButton';
-import { ConfirmModal } from './ConfirmModal';
-import { LoginButton } from './LoginButton';
-import { LogoutButton } from './LogoutButton';
+import { Skeleton } from "@/components/ui/skeleton";
+import { useModal } from "@/hooks/useModal";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { CartButton } from "./CartButton";
+import { ConfirmModal } from "./ConfirmModal";
+import { LoginButton } from "./LoginButton";
+import { LogoutButton } from "./LogoutButton";
+import { useAuthStore } from "@/store/auth/authStore";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isOpen, openModal, closeModal } = useModal();
-  const { isLogin, user } = useAppSelector((state) => state.auth);
+  const isLogin = useAuthStore((state) => state.isLogin);
+  const user = useAuthStore((state) => state.user);
+  const { logout } = useAuthStore();
   const { cart } = useAppSelector((state) => state.cart);
 
   useEffect(() => {
@@ -33,8 +35,8 @@ export const NavigationBar = () => {
   };
 
   const handleConfirmLogout = () => {
-    dispatch(logout());
-    Cookies.remove('accessToken');
+    logout();
+    Cookies.remove("accessToken");
     closeModal();
   };
 

@@ -1,29 +1,29 @@
-import { IProduct } from '@/api/dtos/productDTO';
-import { pageRoutes } from '@/apiRoutes';
-import { Button } from '@/components/ui/button';
-import { PRODUCT_PAGE_SIZE } from '@/constants';
-import { extractIndexLink, isFirebaseIndexError } from '@/helpers/error';
-import { useModal } from '@/hooks/useModal';
-import { FirebaseIndexErrorModal } from '@/pages/error/components/FirebaseIndexErrorModal';
-import { selectIsLogin, selectUser } from '@/store/auth/authSelectors';
-import { addCartItem } from '@/store/cart/cartSlice';
-import { selectFilter } from '@/store/filter/filterSelectors';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loadProducts } from '@/store/product/productsActions';
+import { IProduct } from "@/api/dtos/productDTO";
+import { pageRoutes } from "@/apiRoutes";
+import { Button } from "@/components/ui/button";
+import { PRODUCT_PAGE_SIZE } from "@/constants";
+import { extractIndexLink, isFirebaseIndexError } from "@/helpers/error";
+import { useModal } from "@/hooks/useModal";
+import { FirebaseIndexErrorModal } from "@/pages/error/components/FirebaseIndexErrorModal";
+import { addCartItem } from "@/store/cart/cartSlice";
+import { selectFilter } from "@/store/filter/filterSelectors";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { loadProducts } from "@/store/product/productsActions";
 import {
   selectHasNextPage,
   selectIsLoading,
   selectProducts,
   selectTotalCount,
-} from '@/store/product/productsSelectors';
-import { CartItem } from '@/types/cartType';
-import { ChevronDown, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ProductCardSkeleton } from '../skeletons/ProductCardSkeleton';
-import { EmptyProduct } from './EmptyProduct';
-import { ProductCard } from './ProductCard';
-import { ProductRegistrationModal } from './ProductRegistrationModal';
+} from "@/store/product/productsSelectors";
+import { CartItem } from "@/types/cartType";
+import { ChevronDown, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ProductCardSkeleton } from "../skeletons/ProductCardSkeleton";
+import { EmptyProduct } from "./EmptyProduct";
+import { ProductCard } from "./ProductCard";
+import { ProductRegistrationModal } from "./ProductRegistrationModal";
+import { useAuthStore } from "@/store/auth/authStore";
 
 interface ProductListProps {
   pageSize?: number;
@@ -44,8 +44,8 @@ export const ProductList: React.FC<ProductListProps> = ({
   const hasNextPage = useAppSelector(selectHasNextPage);
   const isLoading = useAppSelector(selectIsLoading);
   const filter = useAppSelector(selectFilter);
-  const user = useAppSelector(selectUser);
-  const isLogin = useAppSelector(selectIsLogin);
+  const isLogin = useAuthStore((state) => state.isLogin);
+  const user = useAuthStore((state) => state.user);
   const totalCount = useAppSelector(selectTotalCount);
 
   const loadProductsData = async (isInitial = false): Promise<void> => {
@@ -154,7 +154,7 @@ export const ProductList: React.FC<ProductListProps> = ({
             {hasNextPage && currentPage * pageSize < totalCount && (
               <div className="flex justify-center mt-4">
                 <Button onClick={() => loadProductsData()} disabled={isLoading}>
-                  {isLoading ? '로딩 중...' : '더 보기'}
+                  {isLoading ? "로딩 중..." : "더 보기"}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </div>

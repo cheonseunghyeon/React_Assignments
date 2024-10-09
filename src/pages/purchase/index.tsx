@@ -1,27 +1,27 @@
-import { Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Loader2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
-import { makePurchase } from '@/api/purchase';
-import { pageRoutes } from '@/apiRoutes';
+import { makePurchase } from "@/api/purchase";
+import { pageRoutes } from "@/apiRoutes";
 
-import { PHONE_PATTERN } from '@/constants';
-import { Layout, authStatusType } from '@/pages/common/components/Layout';
-import { ItemList } from '@/pages/purchase/components/ItemList';
-import { Payment } from '@/pages/purchase/components/Payment';
-import { ShippingInformationForm } from '@/pages/purchase/components/ShippingInformationForm';
-import { selectUser } from '@/store/auth/authSelectors';
-import { selectCart } from '@/store/cart/cartSelectors';
-import { resetCart } from '@/store/cart/cartSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { PHONE_PATTERN } from "@/constants";
+import { Layout, authStatusType } from "@/pages/common/components/Layout";
+import { ItemList } from "@/pages/purchase/components/ItemList";
+import { Payment } from "@/pages/purchase/components/Payment";
+import { ShippingInformationForm } from "@/pages/purchase/components/ShippingInformationForm";
+import { selectCart } from "@/store/cart/cartSelectors";
+import { resetCart } from "@/store/cart/cartSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   purchaseFailure,
   purchaseStart,
   purchaseSuccess,
-} from '@/store/purchase/purchaseSlice';
+} from "@/store/purchase/purchaseSlice";
+import { useAuthStore } from "@/store/auth/authStore";
 
 export interface FormData {
   name: string;
@@ -38,20 +38,20 @@ export interface FormErrors {
 export const Purchase: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const user = useAppSelector(selectUser);
+  const user = useAuthStore((state) => state.user);
   const cart = useAppSelector(selectCart);
   const { isLoading } = useAppSelector((state) => state.purchase);
 
   const [formData, setFormData] = useState<FormData>({
-    name: user?.displayName ?? '',
-    address: '',
-    phone: '',
-    requests: '',
-    payment: 'accountTransfer',
+    name: user?.displayName ?? "",
+    address: "",
+    phone: "",
+    requests: "",
+    payment: "accountTransfer",
   });
 
   const [errors, setErrors] = useState<FormErrors>({
-    phone: '',
+    phone: "",
   });
 
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
@@ -59,7 +59,7 @@ export const Purchase: React.FC = () => {
   useEffect(() => {
     const { address, phone } = formData;
     const isPhoneValid = PHONE_PATTERN.test(phone);
-    setIsFormValid(address.trim() !== '' && isPhoneValid);
+    setIsFormValid(address.trim() !== "" && isPhoneValid);
   }, [formData]);
 
   const handleInputChange = (
@@ -68,14 +68,14 @@ export const Purchase: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (name === 'phone') {
-      if (!PHONE_PATTERN.test(value) && value !== '') {
+    if (name === "phone") {
+      if (!PHONE_PATTERN.test(value) && value !== "") {
         setErrors((prev) => ({
           ...prev,
-          phone: '-를 포함한 휴대폰 번호만 가능합니다',
+          phone: "-를 포함한 휴대폰 번호만 가능합니다",
         }));
       } else {
-        setErrors((prev) => ({ ...prev, phone: '' }));
+        setErrors((prev) => ({ ...prev, phone: "" }));
       }
     }
   };
@@ -98,18 +98,18 @@ export const Purchase: React.FC = () => {
       if (user) {
         dispatch(resetCart(user.uid));
       }
-      console.log('구매 성공!');
+      console.log("구매 성공!");
       navigate(pageRoutes.main);
     } catch (err) {
       if (err instanceof Error) {
         dispatch(purchaseFailure(err.message));
         console.error(
-          '잠시 문제가 발생했습니다! 다시 시도해 주세요.',
+          "잠시 문제가 발생했습니다! 다시 시도해 주세요.",
           err.message
         );
       } else {
-        dispatch(purchaseFailure('알 수 없는 오류가 발생했습니다.'));
-        console.error('잠시 문제가 발생했습니다! 다시 시도해 주세요.');
+        dispatch(purchaseFailure("알 수 없는 오류가 발생했습니다."));
+        console.error("잠시 문제가 발생했습니다! 다시 시도해 주세요.");
       }
     }
   };
@@ -144,7 +144,7 @@ export const Purchase: React.FC = () => {
                     처리 중...
                   </>
                 ) : (
-                  '구매하기'
+                  "구매하기"
                 )}
               </Button>
             </div>
