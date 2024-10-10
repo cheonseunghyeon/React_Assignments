@@ -13,13 +13,11 @@ import { Layout, authStatusType } from '@/pages/common/components/Layout';
 import { ItemList } from '@/pages/purchase/components/ItemList';
 import { Payment } from '@/pages/purchase/components/Payment';
 import { ShippingInformationForm } from '@/pages/purchase/components/ShippingInformationForm';
-import { selectCart } from '@/store/cart/cartSelectors';
-import { resetCart } from '@/store/cart/cartSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 import { useAuthStore } from '@/store/auth/authStore';
 import { usePurchaseStore } from '@/store/purchase/purchaseStore';
 import { useToastStore } from '@/store/toast/toastStore';
+import { useCartStore } from '@/store/cart/cartStore';
 export interface FormData {
   name: string;
   address: string;
@@ -33,11 +31,11 @@ export interface FormErrors {
 }
 
 export const Purchase: React.FC = () => {
-  const dispatch = useAppDispatch();
   const showToast = useToastStore((state) => state.showToast);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const cart = useAppSelector(selectCart);
+  const cart = useCartStore((state) => state.cart);
+  const { resetCart } = useCartStore();
   const isLoading = usePurchaseStore((state) => state.isLoading);
   const { purchaseFailure, purchaseStart, purchaseSuccess } =
     usePurchaseStore();
@@ -95,7 +93,7 @@ export const Purchase: React.FC = () => {
       await makePurchase(purchaseData, user.uid, cart);
       purchaseSuccess();
       if (user) {
-        dispatch(resetCart(user.uid));
+        resetCart(user.uid);
       }
       showToast('성공적으로 구매를 성공하셨습니다');
       console.log('구매 성공!');

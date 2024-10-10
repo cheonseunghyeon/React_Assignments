@@ -6,7 +6,6 @@ import { extractIndexLink, isFirebaseIndexError } from '@/helpers/error';
 import { useModal } from '@/hooks/useModal';
 import { FirebaseIndexErrorModal } from '@/pages/error/components/FirebaseIndexErrorModal';
 import { addCartItem } from '@/store/cart/cartSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { CartItem } from '@/types/cartType';
 import { ChevronDown, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -18,6 +17,7 @@ import { ProductRegistrationModal } from './ProductRegistrationModal';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useFilterStore } from '@/store/filter/filterStore';
 import { useProductStore } from '@/store/product/productStore';
+import { useCartStore } from '@/store/cart/cartStore';
 
 interface ProductListProps {
   pageSize?: number;
@@ -27,13 +27,12 @@ export const ProductList: React.FC<ProductListProps> = ({
   pageSize = PRODUCT_PAGE_SIZE,
 }) => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { isOpen, openModal, closeModal } = useModal();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isIndexErrorModalOpen, setIsIndexErrorModalOpen] =
     useState<boolean>(false);
   const [indexLink, setIndexLink] = useState<string | null>(null);
-
+  const { addCartItem } = useCartStore();
   const products = useProductStore((state) => state.items);
   const hasNextPage = useProductStore((state) => state.hasNextPage);
   const isLoading = useProductStore((state) => state.isLoading);
@@ -71,7 +70,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   const handleCartAction = (product: IProduct): void => {
     if (isLogin && user) {
       const cartItem: CartItem = { ...product, count: 1 };
-      dispatch(addCartItem({ item: cartItem, userId: user.uid, count: 1 }));
+      addCartItem(cartItem, user.uid, 1);
       console.log(`${product.title} 상품이 \n장바구니에 담겼습니다.`);
     } else {
       navigate(pageRoutes.login);
@@ -81,7 +80,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   const handlePurchaseAction = (product: IProduct): void => {
     if (isLogin && user) {
       const cartItem: CartItem = { ...product, count: 1 };
-      dispatch(addCartItem({ item: cartItem, userId: user.uid, count: 1 }));
+      addCartItem(cartItem, user.uid, 1);
       navigate(pageRoutes.cart);
     } else {
       navigate(pageRoutes.login);
