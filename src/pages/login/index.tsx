@@ -11,10 +11,8 @@ import { pageRoutes } from '@/apiRoutes';
 import { EMAIL_PATTERN } from '@/constants';
 import { auth } from '@/firebase';
 import { Layout, authStatusType } from '@/pages/common/components/Layout';
-import { useAppDispatch } from '@/store/hooks';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useToastStore } from '@/store/toast/toastStore';
-import Toast from '@/components/ui/toast';
 
 interface FormErrors {
   email?: string;

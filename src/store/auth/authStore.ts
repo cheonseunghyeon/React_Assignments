@@ -8,13 +8,6 @@ interface AuthState {
   setIsLogin: (isLogin: boolean) => void;
   user: IUser | null;
   setUser: (user: IUser) => void;
-  registerStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
-  registerError: string | null;
-  registerUser: (userData: {
-    email: string;
-    password: string;
-    name: string;
-  }) => Promise<void>;
   logout: () => void;
 }
 
@@ -22,31 +15,12 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       isLogin: false,
+
       user: null,
-      registerStatus: 'idle',
-      registerError: null,
-
-      registerUser: async ({ email, password, name }) => {
-        set({ registerStatus: 'loading' });
-        try {
-          const user = await registerUserAPI({ email, password, name });
-          set({
-            user,
-            isLogin: true,
-            registerStatus: 'succeeded',
-            registerError: null,
-          });
-        } catch (error: any) {
-          set({
-            registerStatus: 'failed',
-            registerError: error.message || 'Registration failed',
-          });
-        }
-      },
-
-      setIsLogin: (isLogin) => set({ isLogin }),
 
       setUser: (user) => set({ user }),
+
+      setIsLogin: (isLogin) => set({ isLogin }),
 
       logout: () => {
         set({ isLogin: false, user: null });

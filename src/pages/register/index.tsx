@@ -1,46 +1,45 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Lock, Mail, User } from "lucide-react";
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Lock, Mail, User } from 'lucide-react';
+import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { pageRoutes } from "@/apiRoutes";
-import { EMAIL_PATTERN } from "@/constants";
-import { Layout, authStatusType } from "@/pages/common/components/Layout";
-import { useAuthStore } from "@/store/auth/authStore";
+import { pageRoutes } from '@/apiRoutes';
+import { EMAIL_PATTERN } from '@/constants';
+import { Layout, authStatusType } from '@/pages/common/components/Layout';
+import { useRegisterUser } from '@/hooks/useRegisterUser';
 
 interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
 }
-
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const registerStatus = useAuthStore((state) => state.registerStatus);
-  const registerError = useAuthStore((state) => state.registerError);
 
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
-  const { registerUser } = useAuthStore();
+
+  const { mutate: registerUser, isPending, isError, error } = useRegisterUser();
+
   useEffect(() => {
-    if (registerStatus === "succeeded") {
+    if (!isPending && !isError) {
       navigate(pageRoutes.login);
     }
-  }, [registerStatus, navigate]);
+  }, [isPending, isError, navigate]);
 
   const validateForm = (): boolean => {
     let formErrors: FormErrors = {};
-    if (!name) formErrors.name = "이름을 입력하세요";
+    if (!name) formErrors.name = '이름을 입력하세요';
     if (!email) {
-      formErrors.email = "이메일을 입력하세요";
+      formErrors.email = '이메일을 입력하세요';
     } else if (!EMAIL_PATTERN.test(email)) {
-      formErrors.email = "이메일 양식이 올바르지 않습니다";
+      formErrors.email = '이메일 양식이 올바르지 않습니다';
     }
-    if (!password) formErrors.password = "비밀번호를 입력하세요";
+    if (!password) formErrors.password = '비밀번호를 입력하세요';
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
@@ -48,29 +47,20 @@ export const RegisterPage: React.FC = () => {
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      try {
-        await registerUser({ email, password, name });
-        console.log("가입 성공!");
-        navigate(pageRoutes.login);
-      } catch (error) {
-        console.error(
-          "회원가입 중 오류가 발생했습니다. 다시 시도해 주세요.",
-          error
-        );
-      }
+      registerUser({ email, password, name });
     }
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     switch (id) {
-      case "name":
+      case 'name':
         setName(value);
         break;
-      case "email":
+      case 'email':
         setEmail(value);
         break;
-      case "password":
+      case 'password':
         setPassword(value);
         break;
     }
@@ -128,15 +118,13 @@ export const RegisterPage: React.FC = () => {
               <p className="text-sm text-red-500">{errors.password}</p>
             )}
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={registerStatus === "loading"}
-          >
-            {registerStatus === "loading" ? "가입 중..." : "회원가입"}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? '가입 중...' : '회원가입'}
           </Button>
-          {registerError && (
-            <p className="text-sm text-red-500">{registerError}</p>
+          {isError && (
+            <p className="text-sm text-red-500">
+              {error?.message || '회원가입에 실패했습니다.'}
+            </p>
           )}
         </form>
       </div>
