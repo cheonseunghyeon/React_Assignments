@@ -31,7 +31,8 @@ export const LoginPage = () => {
   const { setIsLogin, setUser } = useAuthStore();
 
   const handleClickRegister = () => {
-    navigate(pageRoutes.register);
+    console.log('테스트');
+    navigate(pageRoutes.registers);
   };
 
   const validateForm = () => {
