@@ -12,6 +12,7 @@ const isDevEnvironment = import.meta.env.DEV;
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
+  console.log(location.pathname);
   ReactDOM.createRoot(rootElement).render(
     <QueryClientProvider client={queryClient}>
       {isDevEnvironment && <ReactQueryDevtools />}

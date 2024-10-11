@@ -16,3 +16,4 @@ export const Cart = () => {
     </Layout>
   );
 };
+export default Cart;

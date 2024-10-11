@@ -5,7 +5,7 @@ import { Layout } from '@/pages/common/components/Layout';
 import { ProductFilter } from './components/ProductFilter';
 import { ProductList } from './components/ProductList';
 
-export const Home = () => {
+const Home = () => {
   return (
     <Layout>
       <ProductFilter />
@@ -25,3 +25,4 @@ const LoadingSkeleton = () => (
     ))}
   </div>
 );
+export default Home;
