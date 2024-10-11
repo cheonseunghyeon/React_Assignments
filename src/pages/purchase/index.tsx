@@ -152,3 +152,4 @@ export const Purchase: React.FC = () => {
     </Layout>
   );
 };
+export default Purchase;

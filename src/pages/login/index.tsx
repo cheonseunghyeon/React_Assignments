@@ -20,7 +20,7 @@ interface FormErrors {
   form?: string;
 }
 
-export const LoginPage = () => {
+const LoginPage = () => {
   const navigate = useNavigate();
   const showToast = useToastStore((state) => state.showToast);
 
@@ -31,7 +31,9 @@ export const LoginPage = () => {
   const { setIsLogin, setUser } = useAuthStore();
 
   const handleClickRegister = () => {
-    navigate(pageRoutes.register);
+    // console.log(pageRoutes.register);
+    // navigate(pageRoutes.register);
+    location.href = pageRoutes.register;
   };
 
   const validateForm = () => {
@@ -139,3 +141,4 @@ export const LoginPage = () => {
     </Layout>
   );
 };
+export default LoginPage;

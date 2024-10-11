@@ -15,7 +15,7 @@ interface FormErrors {
   email?: string;
   password?: string;
 }
-export const RegisterPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [name, setName] = useState<string>('');
@@ -25,11 +25,11 @@ export const RegisterPage: React.FC = () => {
 
   const { mutate: registerUser, isPending, isError, error } = useRegisterUser();
 
-  useEffect(() => {
-    if (!isPending && !isError) {
-      navigate(pageRoutes.login);
-    }
-  }, [isPending, isError, navigate]);
+  // useEffect(() => {
+  //   if (!isPending && !isError && ) {
+  //     navigate(pageRoutes.main);
+  //   }
+  // }, [isPending, isError, navigate]);
 
   const validateForm = (): boolean => {
     let formErrors: FormErrors = {};
@@ -131,3 +131,4 @@ export const RegisterPage: React.FC = () => {
     </Layout>
   );
 };
+export default RegisterPage;

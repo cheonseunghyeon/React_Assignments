@@ -18,7 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ALL_CATEGORY_ID, categories } from '@/constants';
 import { createNewProduct } from '@/helpers/product';
-import { useProductStore } from '@/store/product/productStore';
+import { useAddProduct } from '@/hooks/useaddProduct';
 import { useToastStore } from '@/store/toast/toastStore';
 import { uploadImage } from '@/utils/imageUpload';
 import { ChangeEvent, useState } from 'react';
@@ -34,14 +34,18 @@ export const ProductRegistrationModal: React.FC<
   ProductRegistrationModalProps
 > = ({ isOpen, onClose, onProductAdded }) => {
   const showToast = useToastStore((state) => state.showToast);
-  const { addProduct } = useProductStore();
+  const {
+    mutate: registerProduct,
+    isPending,
+    isError,
+    error,
+  } = useAddProduct();
   const [image, setImage] = useState<File | null>(null);
 
   const {
     register,
     setValue,
     handleSubmit,
-    setError,
     reset,
     formState: { errors },
   } = useForm<NewProductDTO>(); // NewProductDTO 타입을 폼 데이터로 사용
@@ -65,14 +69,18 @@ export const ProductRegistrationModal: React.FC<
       }
 
       const newProduct = createNewProduct({ ...data }, imageUrl);
-      await addProduct(newProduct);
-      showToast('성공적으로 물품을 등록했습니다');
-
-      // form 이미지 초기화
-      reset();
-      setImage(null);
-      onClose();
-      onProductAdded();
+      registerProduct(newProduct, {
+        onSuccess: () => {
+          showToast('성공적으로 물품을 등록했습니다');
+          reset();
+          setImage(null);
+          onClose();
+          onProductAdded();
+        },
+        onError: (error) => {
+          console.error('물품 등록에 실패했습니다.', error);
+        },
+      });
     } catch (error) {
       console.error('물품 등록에 실패했습니다.', error);
     }
@@ -140,7 +148,12 @@ export const ProductRegistrationModal: React.FC<
           />
         </div>
         <DialogFooter>
-          <Button onClick={handleSubmit(onSubmit)}>등록</Button>
+          <Button onClick={handleSubmit(onSubmit)} disabled={isPending}>
+            {isPending ? '등록 중...' : '등록'}
+          </Button>
+          {isError && (
+            <p style={{ color: 'red', fontWeight: 'bold' }}>{error?.message}</p>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

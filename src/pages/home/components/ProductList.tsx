@@ -2,12 +2,7 @@ import { IProduct } from '@/api/dtos/productDTO';
 import { pageRoutes } from '@/apiRoutes';
 import { Button } from '@/components/ui/button';
 import { PRODUCT_PAGE_SIZE } from '@/constants';
-import { extractIndexLink, isFirebaseIndexError } from '@/helpers/error';
-import { useModal } from '@/hooks/useModal';
-import { FirebaseIndexErrorModal } from '@/pages/error/components/FirebaseIndexErrorModal';
-import { CartItem } from '@/types/cartType';
-import { ChevronDown, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductCardSkeleton } from '../skeletons/ProductCardSkeleton';
 import { EmptyProduct } from './EmptyProduct';
@@ -15,8 +10,11 @@ import { ProductCard } from './ProductCard';
 import { ProductRegistrationModal } from './ProductRegistrationModal';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useFilterStore } from '@/store/filter/filterStore';
-import { useProductStore } from '@/store/product/productStore';
 import { useCartStore } from '@/store/cart/cartStore';
+import { useLoadProduct } from '@/hooks/useloadProduct';
+import { ChevronDown, Plus } from 'lucide-react';
+import { CartItem } from '@/types/cartType';
+import { useModal } from '@/hooks/useModal';
 
 interface ProductListProps {
   pageSize?: number;
@@ -28,70 +26,50 @@ export const ProductList: React.FC<ProductListProps> = ({
   const navigate = useNavigate();
   const { isOpen, openModal, closeModal } = useModal();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isIndexErrorModalOpen, setIsIndexErrorModalOpen] =
-    useState<boolean>(false);
-  const [indexLink, setIndexLink] = useState<string | null>(null);
   const { addCartItem } = useCartStore();
-  const products = useProductStore((state) => state.items);
-  const hasNextPage = useProductStore((state) => state.hasNextPage);
-  const isLoading = useProductStore((state) => state.isLoading);
-  const totalCount = useProductStore((state) => state.totalCount);
-  const { loadProducts } = useProductStore();
   const filter = useFilterStore();
-  const isLogin = useAuthStore((state) => state.isLogin);
+  const { isLogin } = useAuthStore();
   const user = useAuthStore((state) => state.user);
 
-  const loadProductsData = async (isInitial = false): Promise<void> => {
-    try {
-      const page = isInitial ? 1 : currentPage + 1;
-      await loadProducts(filter, pageSize, page, isInitial);
-      if (!isInitial) {
-        setCurrentPage(page);
+  const { data, isLoading, isFetching } = useLoadProduct(
+    filter,
+    pageSize,
+    currentPage
+  );
+
+  const handleCartAction = useCallback(
+    (product: IProduct): void => {
+      if (isLogin && user) {
+        const cartItem: CartItem = { ...product, count: 1 };
+        addCartItem(cartItem, user.uid, 1);
+        console.log(`${product.title} 상품이 \n장바구니에 담겼습니다.`);
+      } else {
+        navigate(pageRoutes.login);
       }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+    },
+    [isLogin, user, addCartItem, navigate]
+  );
 
-      if (isFirebaseIndexError(errorMessage)) {
-        const link = extractIndexLink(errorMessage);
-        setIndexLink(link);
-        setIsIndexErrorModalOpen(true);
+  const handlePurchaseAction = useCallback(
+    (product: IProduct): void => {
+      if (isLogin && user) {
+        const cartItem: CartItem = { ...product, count: 1 };
+        addCartItem(cartItem, user.uid, 1);
+        navigate(pageRoutes.cart);
+      } else {
+        navigate(pageRoutes.login);
       }
-      throw error;
-    }
-  };
+    },
+    [isLogin, user, addCartItem, navigate]
+  );
 
-  useEffect(() => {
-    setCurrentPage(1);
-    loadProductsData(true);
-  }, [filter]);
+  const handleLoadMore = useCallback(() => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  }, []);
 
-  const handleCartAction = (product: IProduct): void => {
-    if (isLogin && user) {
-      const cartItem: CartItem = { ...product, count: 1 };
-      addCartItem(cartItem, user.uid, 1);
-      console.log(`${product.title} 상품이 \n장바구니에 담겼습니다.`);
-    } else {
-      navigate(pageRoutes.login);
-    }
-  };
-
-  const handlePurchaseAction = (product: IProduct): void => {
-    if (isLogin && user) {
-      const cartItem: CartItem = { ...product, count: 1 };
-      addCartItem(cartItem, user.uid, 1);
-      navigate(pageRoutes.cart);
-    } else {
-      navigate(pageRoutes.login);
-    }
-  };
-
-  const handleProductAdded = (): void => {
-    setCurrentPage(1);
-    loadProductsData(true);
-  };
-
-  const firstProductImage = products[0]?.image;
+  const firstProductImage = useMemo(() => {
+    return data?.products[0]?.image;
+  }, [data]);
 
   useEffect(() => {
     if (firstProductImage) {
@@ -111,18 +89,18 @@ export const ProductList: React.FC<ProductListProps> = ({
           )}
         </div>
 
-        {isLoading && products.length === 0 ? (
+        {isLoading && (!data || data.products.length === 0) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: pageSize }, (_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
           </div>
-        ) : products.length === 0 ? (
+        ) : data?.products.length === 0 ? (
           <EmptyProduct onAddProduct={openModal} />
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((product, index) => (
+              {data?.products.map((product, index) => (
                 <ProductCard
                   key={`${product.id}_${index}`}
                   product={product}
@@ -137,10 +115,10 @@ export const ProductList: React.FC<ProductListProps> = ({
                 />
               ))}
             </div>
-            {hasNextPage && currentPage * pageSize < totalCount && (
+            {data?.hasNextPage && (
               <div className="flex justify-center mt-4">
-                <Button onClick={() => loadProductsData()} disabled={isLoading}>
-                  {isLoading ? '로딩 중...' : '더 보기'}
+                <Button onClick={handleLoadMore} disabled={isFetching}>
+                  {isFetching ? '로딩 중...' : '더 보기'}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -152,14 +130,9 @@ export const ProductList: React.FC<ProductListProps> = ({
           <ProductRegistrationModal
             isOpen={isOpen}
             onClose={closeModal}
-            onProductAdded={handleProductAdded}
+            onProductAdded={() => setCurrentPage(1)}
           />
         )}
-        <FirebaseIndexErrorModal
-          isOpen={isIndexErrorModalOpen}
-          onClose={() => setIsIndexErrorModalOpen(false)}
-          indexLink={indexLink}
-        />
       </div>
     </>
   );
