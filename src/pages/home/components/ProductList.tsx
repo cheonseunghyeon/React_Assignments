@@ -2,7 +2,7 @@ import { IProduct } from '@/api/dtos/productDTO';
 import { pageRoutes } from '@/apiRoutes';
 import { Button } from '@/components/ui/button';
 import { PRODUCT_PAGE_SIZE } from '@/constants';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductCardSkeleton } from '../skeletons/ProductCardSkeleton';
 import { EmptyProduct } from './EmptyProduct';
@@ -37,31 +37,39 @@ export const ProductList: React.FC<ProductListProps> = ({
     currentPage
   );
 
-  const handleCartAction = (product: IProduct): void => {
-    if (isLogin && user) {
-      const cartItem: CartItem = { ...product, count: 1 };
-      addCartItem(cartItem, user.uid, 1);
-      console.log(`${product.title} 상품이 \n장바구니에 담겼습니다.`);
-    } else {
-      navigate(pageRoutes.login);
-    }
-  };
+  const handleCartAction = useCallback(
+    (product: IProduct): void => {
+      if (isLogin && user) {
+        const cartItem: CartItem = { ...product, count: 1 };
+        addCartItem(cartItem, user.uid, 1);
+        console.log(`${product.title} 상품이 \n장바구니에 담겼습니다.`);
+      } else {
+        navigate(pageRoutes.login);
+      }
+    },
+    [isLogin, user, addCartItem, navigate]
+  );
 
-  const handlePurchaseAction = (product: IProduct): void => {
-    if (isLogin && user) {
-      const cartItem: CartItem = { ...product, count: 1 };
-      addCartItem(cartItem, user.uid, 1);
-      navigate(pageRoutes.cart);
-    } else {
-      navigate(pageRoutes.login);
-    }
-  };
+  const handlePurchaseAction = useCallback(
+    (product: IProduct): void => {
+      if (isLogin && user) {
+        const cartItem: CartItem = { ...product, count: 1 };
+        addCartItem(cartItem, user.uid, 1);
+        navigate(pageRoutes.cart);
+      } else {
+        navigate(pageRoutes.login);
+      }
+    },
+    [isLogin, user, addCartItem, navigate]
+  );
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     setCurrentPage((prevPage) => prevPage + 1);
-  };
+  }, []);
 
-  const firstProductImage = data?.products[0]?.image;
+  const firstProductImage = useMemo(() => {
+    return data?.products[0]?.image;
+  }, [data]);
 
   useEffect(() => {
     if (firstProductImage) {
